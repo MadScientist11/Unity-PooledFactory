@@ -1,6 +1,9 @@
 ﻿using System;
 
-public interface IPoolable<T>
+namespace PooledFactory
 {
-    public Action<T> Release { get; set; }
+    public interface IPoolable<T>
+    {
+        public Action<T> Release { get; set; }
+    }
 }

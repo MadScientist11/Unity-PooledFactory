@@ -1,17 +1,21 @@
 ﻿using System;
 
-public class EnumExtensions<T> where T : struct, IConvertible
+namespace PooledFactory
 {
-    public static T Random
+    public class EnumExtensions<T> where T : struct, IConvertible
     {
-        get
+        public static T Random
         {
-            if (!typeof(T).IsEnum)
-                throw new ArgumentException("T must be an enumerated type");
+            get
+            {
+                if (!typeof(T).IsEnum)
+                    throw new ArgumentException("T must be an enumerated type");
 
-            Array values = Enum.GetValues(typeof(T));
-            int randomValue =  UnityEngine.Random.Range(0, values.Length);;
-            return (T)values.GetValue(randomValue);
+                Array values = Enum.GetValues(typeof(T));
+                int randomValue = UnityEngine.Random.Range(0, values.Length);
+                ;
+                return (T)values.GetValue(randomValue);
+            }
         }
     }
 }

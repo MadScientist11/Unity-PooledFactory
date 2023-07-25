@@ -2,67 +2,70 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public abstract class PooledFactory<T> where T : class, IPoolable<T>
+namespace PooledFactory
 {
-    private readonly HashSet<T> _pool;
-
-    protected PooledFactory(int defaultCapacity = 10)
+    public abstract class PooledFactory<T> where T : class, IPoolable<T>
     {
-        _pool = new HashSet<T>(defaultCapacity);
-    }
-    
-    protected abstract T Create();
+        private readonly HashSet<T> _pool;
 
-    protected virtual T Get(Func<T, bool> predicate)
-    {
-        T obj;
-        if (_pool.Count == 0)
+        protected PooledFactory(int defaultCapacity = 10)
         {
-            obj = Create();
+            _pool = new HashSet<T>(defaultCapacity);
         }
-        else
+    
+        protected abstract T Create();
+
+        protected virtual T Get(Func<T, bool> predicate)
         {
-            if (predicate == null)
+            T obj;
+            if (_pool.Count == 0)
             {
-                int index = this._pool.Count - 1;
-                obj = this._pool.ElementAt(index);
-                this._pool.Remove(obj);
+                obj = Create();
             }
             else
             {
-                T searchFor = SearchFor(predicate);
-                if (searchFor != null)
+                if (predicate == null)
                 {
-                    obj = searchFor;
-                    _pool.Remove(searchFor);
+                    int index = this._pool.Count - 1;
+                    obj = this._pool.ElementAt(index);
+                    this._pool.Remove(obj);
                 }
                 else
                 {
-                    obj = Create();
+                    T searchFor = SearchFor(predicate);
+                    if (searchFor != null)
+                    {
+                        obj = searchFor;
+                        _pool.Remove(searchFor);
+                    }
+                    else
+                    {
+                        obj = Create();
+                    }
                 }
-            }
            
+            }
+
+            obj.Release = Release;
+            return obj;
         }
 
-        obj.Release = Release;
-        return obj;
-    }
-
-    protected virtual void Release(T obj)
-    {
-        _pool.Add(obj);
-    }
+        protected virtual void Release(T obj)
+        {
+            _pool.Add(obj);
+        }
     
   
-    private T SearchFor(Func<T, bool> predicate)
-    {
-        foreach (T obj in _pool)
+        private T SearchFor(Func<T, bool> predicate)
         {
-            if (predicate.Invoke(obj))
-                return obj;
+            foreach (T obj in _pool)
+            {
+                if (predicate.Invoke(obj))
+                    return obj;
+            }
+
+            return null;
         }
 
-        return null;
     }
-
 }
